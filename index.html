@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game List</title>
+</head>
+<body>
+    <h1>My Game List</h1>
+    <ul id="gameList">
+    </ul>
+    <script>
+        async function getDataGame(){
+            const res = await fetch("released/index.json")
+                .then(response => response.json());
+
+            return res;
+        }
+
+        getDataGame().then(response=> {
+            const ul = document.getElementById('gameList');
+            for(const data of response){
+                const li = document.createElement('li');
+                // li.innerHTML = data.name;
+                const a = document.createElement('a');
+                a.innerHTML = data.name;
+                a.href = data.src;
+                li.appendChild(a);
+                ul.appendChild(li);
+            }
+        });
+    </script>
+</body>
+</html>

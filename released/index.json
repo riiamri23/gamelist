@@ -1,0 +1,10 @@
+[
+    {
+        "name": "pacman",
+        "src": "released/pacman"
+    },
+    {
+        "name": "snake",
+        "src": "released/snake"
+    }
+]
