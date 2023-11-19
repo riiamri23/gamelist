@@ -1,5 +1,6 @@
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+const assetsOnline = '';
 
 const headX = 10;
 const headY = 10;
@@ -15,8 +16,8 @@ let velocityY = 0;
 
 const speed = 7;
 
-const gulpSound = new Audio("assets/gulp.mp3");
-const gameOverSound = new Audio("assets/game-over.mp3")
+const gulpSound = new Audio(`${assetsOnline}assets/gulp.mp3`);
+const gameOverSound = new Audio(`${assetsOnline}assets/game-over.mp3`)
 
 class SnakeParts{
     constructor(X,Y){
@@ -46,12 +47,11 @@ class Snake{
         );
         this.drawTail();
 
-
         ctx.closePath();
     }
 
-    addTail = function(isCollision){
-        if(isCollision) this.tailLength++;
+    addTail = function(){
+        this.tailLength++;
     }
 
     drawTail = function(){
@@ -95,8 +95,8 @@ class Apple{
 
     randomAppear = function(isCollision){
         if(isCollision){
-            this.appleX = Math.floor(Math.random() * tileCount);
-            this.appleY = Math.floor(Math.random() * tileCount);
+            this.appleX = Math.floor(Math.random() * this.tileCount);
+            this.appleY = Math.floor(Math.random() * this.tileCount);
         }
         this.draw();
     }
@@ -121,15 +121,16 @@ class Score{
         ctx.fillText("Highest Score " + highestScore, canvas.width-100, 10);
     }
 
-    incScore = function(isCollision){
-        if(isCollision) this.totalScore++;
+    incScore = function(){
+        this.totalScore++;
     }
 
     setHighestScore = function(){
-        localStorage.setItem("highestScore", this.totalScore);
+        const highestScore = localStorage.getItem("highestScore") !== null ? localStorage.getItem("highestScore") : 0;
+        if(this.totalScore > highestScore) localStorage.setItem("highestScore", this.totalScore);
     }
 }
-const snake = new Snake(
+let snake = new Snake(
     headX,
     headY,
     tileCount,
@@ -138,14 +139,14 @@ const snake = new Snake(
     parts,
 );
 
-const apple = new Apple(
-    appleX,
-    appleY,
+let apple = new Apple(
+    Math.floor(Math.random() * tileCount),
+    Math.floor(Math.random() * tileCount),
     tileCount,
     tileSize
 );
 
-const score = new Score(0);
+let score = new Score(0);
 
 function checkGameOver(snake){
     let isOver = false;
@@ -165,10 +166,19 @@ function checkGameOver(snake){
 
     if(isOver){
         // create label on screen
+      
+        ctx.beginPath();
+      
         ctx.fillStyle = "white";
         ctx.font = "50px Verdana";
         
         ctx.fillText("Game Over", canvas.width / 6.5, canvas.height / 2);
+      
+        ctx.font = "25px Verdana";
+        ctx.fillText("Enter to play again", canvas.width / 6.5, canvas.height / 1.8);
+      
+        ctx.closePath();
+      
     }
 
     return isOver;
@@ -215,7 +225,31 @@ function keyDown(event){
         velocityX = 1;
         velocityY = 0;
     }
+  
+    if(event.keyCode === 13){
+      velocityX = 0;
+      velocityY = 0;
+      snake = new Snake(
+          headX,
+          headY,
+          tileCount,
+          tileSize,
+          "white",
+          parts,
+      );
 
+      apple = new Apple(
+          Math.floor(Math.random() * tileCount),
+          Math.floor(Math.random() * tileCount),
+          tileCount,
+          tileSize
+      );
+
+      score = new Score(0);
+      
+      drawGame();
+      
+    }
     
 }
 
@@ -237,12 +271,17 @@ function drawGame(){
     score.draw();
     score.drawHighestScore();
 
-    let collision = checkOnCollision(snake, apple);
-    apple.randomAppear(collision);
-    snake.addTail(collision);
-    score.incScore(collision);
+    let isCollision = checkOnCollision(snake, apple);
+  
+    apple.randomAppear(isCollision);
+    if(isCollision){
+      snake.addTail();
+      score.incScore();
+    }
 
     setTimeout(drawGame, 1000/speed);
 }
 
 drawGame();
+
+
